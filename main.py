@@ -22,6 +22,8 @@ This will install the packages from the requirements.txt for this project.
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+# Initialize the CKEditor
+ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 # CONNECT TO DB
@@ -41,6 +43,15 @@ class BlogPost(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
 
 
+class AddPostForm(FlaskForm):
+    title = StringField('Blog PostTitle', validators=[DataRequired()])
+    subtitle = StringField('Subtitle', validators=[DataRequired()])
+    author = StringField('Your Name', validators=[DataRequired()])
+    url = StringField('Blog Image URL', validators=[DataRequired(), URL()])
+    body = CKEditorField('Blog Content', validators=[DataRequired()])
+    submit = SubmitField('Submit Post')
+
+
 with app.app_context():
     db.create_all()
 
@@ -58,12 +69,18 @@ def get_all_posts():
 # Add a route so that you can click on individual posts.
 @app.route('/post/<post_id>')
 def show_post(post_id):
-    # TODO: Retrieve a BlogPost from the database based on the post_id
+    # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
     return render_template("post.html", post=requested_post)
 
 
-# TODO: add_new_post() to create a new blog post
+# add_new_post() to create a new blog post
+@app.route('/new-post')
+def add_new_post():
+    form = AddPostForm()
+    return render_template("make-post.html", form=form)
+
+
 
 # TODO: edit_post() to change an existing blog post
 

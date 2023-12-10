@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -75,10 +77,26 @@ def show_post(post_id):
 
 
 # add_new_post() to create a new blog post
-@app.route('/new-post')
+@app.route('/new-post', methods=['GET', 'POST'])
 def add_new_post():
+
     form = AddPostForm()
+    if form.validate_on_submit():
+        today = datetime.datetime.now()
+        with app.app_context():
+            new_post = BlogPost(
+                title=form.title.data,
+                subtitle=form.subtitle.data,
+                date=today.strftime("%B %d, %Y"),
+                body=form.body.data,
+                author=form.author.data,
+                img_url=form.url.data,
+            )
+            db.session.add(new_post)
+            db.session.commit()
+        return redirect(url_for('get_all_posts'))
     return render_template("make-post.html", form=form)
+
 
 
 

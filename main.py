@@ -104,7 +104,7 @@ def edit_post(post_id):
     with app.app_context():
         post_to_edit = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
     form = CreatePostForm(
-        title= post_to_edit.title,
+        title=post_to_edit.title,
         subtitle=post_to_edit.subtitle,
         img_url=post_to_edit.img_url,
         author=post_to_edit.author,
@@ -126,6 +126,14 @@ def edit_post(post_id):
 
 
 # TODO: delete_post() to remove a blog post from the database
+@app.route('/delete/<post_id>')
+def delete_post(post_id):
+    with app.app_context():
+        post_to_delete = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
+        db.session.delete(post_to_delete)
+        db.session.commit()
+    return redirect(url_for('get_all_posts'))
+
 
 # Below is the code from previous lessons. No changes needed.
 @app.route("/about")

@@ -72,7 +72,8 @@ def get_all_posts():
 @app.route('/post/<post_id>')
 def show_post(post_id):
     # Retrieve a BlogPost from the database based on the post_id
-    requested_post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
+    with app.app_context():
+        requested_post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
     return render_template("post.html", post=requested_post)
 
 
@@ -98,16 +99,29 @@ def add_new_post():
 
 
 # TODO: edit_post() to change an existing blog post
-@app.route('/edit-post/<post_id>', methods=['GET'])
+@app.route('/edit-post/<post_id>', methods=['GET', 'POST'])
 def edit_post(post_id):
-    post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
+    with app.app_context():
+        post_to_edit = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
     form = CreatePostForm(
-        title= post.title,
-        subtitle=post.subtitle,
-        img_url=post.img_url,
-        author=post.author,
-        body=post.body
+        title= post_to_edit.title,
+        subtitle=post_to_edit.subtitle,
+        img_url=post_to_edit.img_url,
+        author=post_to_edit.author,
+        body=post_to_edit.body
     )
+
+    if form.validate_on_submit():
+        with app.app_context():
+            post_to_update = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
+            post_to_update.title = form.title.data
+            post_to_update.subtitle = form.subtitle.data
+            post_to_update.img_url = form.url.data
+            post_to_update.author = form.author.data
+            post_to_update.body = form.body.data
+            db.session.commit()
+        return redirect(url_for('show_post', post_id=post_id))
+
     return render_template('make-post.html', form=form, new_post=False)
 
 

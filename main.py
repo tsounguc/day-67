@@ -79,7 +79,6 @@ def show_post(post_id):
 # add_new_post() to create a new blog post
 @app.route('/new-post', methods=['GET', 'POST'])
 def add_new_post():
-
     form = AddPostForm()
     if form.validate_on_submit():
         today = datetime.datetime.now()
@@ -95,12 +94,15 @@ def add_new_post():
             db.session.add(new_post)
             db.session.commit()
         return redirect(url_for('get_all_posts'))
-    return render_template("make-post.html", form=form)
-
-
+    return render_template("make-post.html", form=form, new_post=True)
 
 
 # TODO: edit_post() to change an existing blog post
+@app.route('/edit-post/<post_id>', methods=['GET'])
+def edit_post(post_id):
+    form = AddPostForm()
+    return render_template('make-post.html', form=form, new_post=False)
+
 
 # TODO: delete_post() to remove a blog post from the database
 

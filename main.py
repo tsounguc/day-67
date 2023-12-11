@@ -45,7 +45,7 @@ class BlogPost(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
 
 
-class AddPostForm(FlaskForm):
+class CreatePostForm(FlaskForm):
     title = StringField('Blog PostTitle', validators=[DataRequired()])
     subtitle = StringField('Subtitle', validators=[DataRequired()])
     author = StringField('Your Name', validators=[DataRequired()])
@@ -79,7 +79,7 @@ def show_post(post_id):
 # add_new_post() to create a new blog post
 @app.route('/new-post', methods=['GET', 'POST'])
 def add_new_post():
-    form = AddPostForm()
+    form = CreatePostForm()
     if form.validate_on_submit():
         today = datetime.datetime.now()
         with app.app_context():
@@ -100,7 +100,14 @@ def add_new_post():
 # TODO: edit_post() to change an existing blog post
 @app.route('/edit-post/<post_id>', methods=['GET'])
 def edit_post(post_id):
-    form = AddPostForm()
+    post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
+    form = CreatePostForm(
+        title= post.title,
+        subtitle=post.subtitle,
+        img_url=post.img_url,
+        author=post.author,
+        body=post.body
+    )
     return render_template('make-post.html', form=form, new_post=False)
 
 
